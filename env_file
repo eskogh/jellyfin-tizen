@@ -1,0 +1,8 @@
+${TIZEN_NAME}="Your Name" \
+${TIZEN_EMAIL}="mail@example.com" \
+${TIZEN_COMPANY}="Your organization" \
+${TIZEN_CITY}="City" \
+${TIZEN_STATE}="State" \
+${TIZEN_COUNTRY}="SE" \
+${TIZEN_PASSWORD}="" \
+${TIZEN_IP}="10.13.37.101"
