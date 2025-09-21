@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# Jellyfin for Samsung TV on Tizen OS - Orchestrator
+# Usage:
+#   tizen-jellyfin certify    # generate cert + profile (uses .env vars or prompts)
+#   tizen-jellyfin build      # build + package Jellyfin.wgt
+#   tizen-jellyfin send       # install Jellyfin.wgt to TV (requires developer mode)
+#   tizen-jellyfin all        # certify + build + send
+#   tizen-jellyfin --help
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export TIZEN_STUDIO_HOME="${TIZEN_STUDIO_HOME:-/home/jellyfin/tizen-studio}"
+export PATH="$TIZEN_STUDIO_HOME/tools/ide/bin:$TIZEN_STUDIO_HOME/tools:$PATH"
+
+# Load .env if present
+if [[ -f "/home/jellyfin/.env" ]]; then
+  # shellcheck disable=SC2046
+  export $(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' /home/jellyfin/.env | xargs -d '\n' -I{} echo {})
+elif [[ -f ".env" ]]; then
+  export $(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' .env | xargs -d '\n' -I{} echo {})
+fi
+
+cmd="${1:---help}"
+
+case "$cmd" in
+  certify)
+    exec /usr/local/bin/tizen-cert
+    ;;
+  build)
+    exec /usr/local/bin/tizen-build
+    ;;
+  send)
+    exec /usr/local/bin/tizen-send
+    ;;
+  all)
+    /usr/local/bin/tizen-cert
+    /usr/local/bin/tizen-build
+    exec /usr/local/bin/tizen-send
+    ;;
+  --help|-h|help)
+    cat <<'EOF'
+Tizen Jellyfin helper
+
+Commands:
+  certify   Generate author certificate + security profile (reads .env or prompts)
+  build     Build and package Jellyfin.wgt
+  send      Install Jellyfin.wgt to a TV in Developer Mode
+  all       certify + build + send
+
+Environment (.env):
+  TIZEN_NAME=Your Name
+  TIZEN_EMAIL=name@example.com
+  TIZEN_COMPANY=Your Org
+  TIZEN_CITY=City
+  TIZEN_STATE=State
+  TIZEN_COUNTRY=SE
+  TIZEN_PASSWORD=1234
+  TIZEN_IP=192.168.1.50
+EOF
+    ;;
+  *)
+    echo "Unknown command: $cmd" >&2
+    exit 2
+    ;;
+esac
